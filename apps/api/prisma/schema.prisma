@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  password     String
+  refreshToken String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  foods Food[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  foods Food[] @relation("FoodTags")
+}
+
+model Food {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  imageUrl    String
+  receipt     String
+  view        Int          @default(0)
+  monthlyView Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ingredients Ingredient[]
+  steps       Step[]
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  tags        Tag[]        @relation("FoodTags")
+}
+
+model Ingredient {
+  id     Int     @id @default(autoincrement())
+  name   String
+  amount String?
+  unit   String?
+  food   Food    @relation(fields: [foodId], references: [id])
+  foodId Int
+}
+
+model Step {
+  id      Int    @id @default(autoincrement())
+  order   Int
+  content String
+  food    Food   @relation(fields: [foodId], references: [id])
+  foodId  Int
+}
